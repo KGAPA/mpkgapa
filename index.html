@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KGAPA Membership Form</title>
+    <meta property="og:title" content="KGAPA Membership Form" />
+    <meta property="og:description" content="KGAPA അംഗത്വ ഫോം ഓൺലൈനായി പൂരിപ്പിക്കാം." />
+    <meta property="og:url" content="https://sumteck.github.io/mfkgapa/" />
+    <meta property="og:type" content="website" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        /* ============================================================
+           GLOBAL & VARIABLES
+        ============================================================ */
+        :root {
+            --green-dark:  #2e7d32;
+            --green-mid:   #388e3c;
+            --green-light: #e8f5e9;
+            --accent:      #f39c12;
+            --blue:        #3498db;
+            --red:         #d32f2f;
+            --text:        #212121;
+            --border:      #bdbdbd;
+        }
+
+        @page { size: A4; margin: 0; }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            background-color: #f4f4f4;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 10px;
+            padding-top: 80px;
+            color: var(--text);
+        }
+
+        /* ============================================================
+           TOP ACTION BAR
+        ============================================================ */
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            background: var(--green-dark);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            flex-wrap: wrap;
+        }
+
+        .top-bar select {
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 13px;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+            color: #333;
+            max-width: 260px;
+            width: 100%;
+        }
+
+        .btn-top {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            color: white;
+            transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+        .btn-submit  { background-color: var(--accent); }
+        .btn-submit:hover { background-color: #e67e22; }
+        .btn-print   { background-color: var(--blue); }
+        .btn-print:hover { background-color: #2980b9; }
+
+        /* Spinner inside submit button */
+        .btn-submit .spinner {
+            display: none;
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ============================================================
+           A4 PAGE — Desktop (print layout preserved)
+           The .a4-page uses position:relative so that .logo-area and
+           .photo-area can be positioned absolutely within it on desktop.
+        ============================================================ */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 10mm 15mm;
+            margin: auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        /* ── Desktop: logo absolutely top-left ── */
+        .logo-area {
+            position: absolute;
+            left: 15mm;
+            top: 10mm;
+        }
+        .logo-area img { width: 22mm; height: auto; }
+
+        /* ── Desktop: header centred with room for logo & photo ── */
+        .header-section {
+            text-align: center;
+            margin-bottom: 5px;
+            padding: 0 35mm;
+        }
+        .header-section h2 { margin: 0; font-size: 14pt; font-weight: bold; line-height: 1.3; }
+        .header-section p  { margin: 2px 0; font-size: 10pt; font-weight: bold; }
+
+        .form-oval {
+            border: 1.5px solid black;
+            border-radius: 20px;
+            padding: 3px 20px;
+            display: inline-block;
+            margin: 8px 0;
+            font-weight: bold;
+            font-size: 11pt;
+        }
+        .form-title {
+            font-weight: bold;
+            font-size: 11pt;
+            margin-top: 5px;
+            margin-bottom: 25px;
+            display: inline-block;
+            text-decoration: underline;
+        }
+
+        /* ── Desktop/Print: photo absolutely top-right ── */
+        .photo-area {
+            position: absolute;
+            right: 15mm;
+            top: 10mm;
+            text-align: center;
+        }
+        .photo-box {
+            width: 30mm; height: 35mm;
+            border: 1px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
+        .photo-box img { width: 100%; height: 100%; object-fit: cover; display: none; }
+
+        /* Form fields */
+        .main-form { width: 100%; font-size: 11pt; clear: both; }
+
+        .field-row {
+            display: flex;
+            margin-bottom: 8px;
+            align-items: flex-start;
+        }
+        .field-label  { width: 310px; font-weight: bold; flex-shrink: 0; }
+        .field-dots   { width: 20px; text-align: center; font-weight: bold; flex-shrink: 0; }
+        .field-value-box {
+            flex-grow: 1;
+            border: none;
+            min-height: 20px;
+            outline: none;
+            border-bottom: 1px solid #f0f0f0;
+            word-break: break-word;
+        }
+        .sub-label {
+            width: 310px;
+            padding-left: 25px;
+            font-weight: normal;
+            flex-shrink: 0;
+        }
+        .address-box-2line { min-height: 40px; border-bottom: 1px solid #f0f0f0; }
+
+        .declaration {
+            margin: 12px 0;
+            font-size: 10.5pt;
+            line-height: 1.4;
+            text-align: justify;
+        }
+
+        .footer-sig {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .sig-section { text-align: center; width: 160px; }
+        .sig-box {
+            width: 100%;
+            height: 40px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .sig-box img { max-width: 100%; max-height: 100%; display: none; }
+
+        .upload-btn {
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            font-size: 7pt;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .remarks-header {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            text-decoration: underline;
+            font-size: 12pt;
+            margin-bottom: 10px;
+        }
+
+        /* ============================================================
+           STATUS / ID CARD SECTION
+        ============================================================ */
+        .status-container {
+            max-width: 450px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            border-top: 4px solid var(--blue);
+        }
+        .status-input {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .check-btn {
+            padding: 10px 20px;
+            background: var(--blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .download-btn {
+            padding: 12px 20px;
+            background: var(--green-dark);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            display: none;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        /* ============================================================
+           MOBILE RESPONSIVENESS  (@media screen max-width: 768px)
+           — does NOT affect @media print
+        ============================================================ */
+        @media screen and (max-width: 768px) {
+
+            body { padding: 8px; padding-top: 130px; }
+
+            /* Top bar stacks on narrow screens */
+            .top-bar {
+                flex-direction: column;
+                gap: 8px;
+                padding: 10px 12px;
+            }
+            .top-bar select { max-width: 100%; font-size: 12px; }
+            .top-bar .btn-top { width: 100%; text-align: center; padding: 10px; }
+
+            /* ── A4 page becomes fully fluid ── */
+            .a4-page {
+                width: 100%;
+                height: auto;
+                min-height: unset;
+                padding: 16px 14px 14px 14px;
+                box-shadow: 0 0 6px rgba(0,0,0,0.15);
+            }
+
+            /* ── Logo: centred block, not absolute ── */
+            .logo-area {
+                position: static;
+                display: flex;
+                justify-content: center;
+                width: 100%;
+                margin-bottom: 8px;
+                float: none;
+            }
+            .logo-area img { width: 18mm; }
+
+            /* ── Header: full width, no side padding ── */
+            .header-section {
+                padding: 0 8px;
+                margin-bottom: 6px;
+            }
+            .header-section h2 { font-size: 10pt; }
+            .header-section p  { font-size: 8pt; }
+            .form-oval  { font-size: 8.5pt; padding: 2px 12px; }
+            .form-title { font-size: 9pt; margin-bottom: 14px; }
+
+            /* ── Photo area: static block, centred, BELOW header text and ABOVE main-form ──
+               The DOM order is: logo → header → photo → main-form.
+               On desktop, photo is pulled out via position:absolute.
+               On mobile, it flows naturally in DOM order here:
+               appears exactly below ( APPLICATION FOR MEMBERSHIP ) and above form fields. */
+            .photo-area {
+                position: static;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                margin: 10px auto 16px auto;
+                float: none;
+                text-align: center;
+            }
+            .photo-box { width: 24mm; height: 28mm; }
+
+            /* ── Field rows: stack label above value ── */
+            .main-form { font-size: 9.5pt; }
+
+            .field-row {
+                flex-direction: column;
+                margin-bottom: 12px;
+            }
+            .field-label,
+            .sub-label {
+                width: 100%;
+                padding-left: 0;
+                margin-bottom: 3px;
+                font-size: 9pt;
+                font-weight: bold;
+            }
+            .field-dots { display: none; }
+            .field-value-box {
+                width: 100%;
+                border-bottom: 1.5px solid var(--border);
+                border-top: none;
+                border-left: none;
+                border-right: none;
+                padding: 4px 2px;
+                min-height: 26px;
+                font-size: 9.5pt;
+                background: transparent;
+            }
+            .address-box-2line { min-height: 48px; }
+
+            /* Footer signature row */
+            .footer-sig {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .sig-section {
+                width: 100%;
+                margin-top: 14px;
+                text-align: center;
+            }
+
+            /* Remarks – President/Secretary float block */
+            .a4-page > div[style*="float: right"] {
+                float: none !important;
+                text-align: center;
+                width: 100%;
+                margin-top: 14px;
+            }
+
+            /* Status checker */
+            .status-container { padding: 16px 12px; }
+            .status-input { width: 100%; font-size: 14px; }
+            .check-btn    { width: 100%; font-size: 14px; }
+        }
+
+        /* Mid-range: tablet-ish (769px–900px) — gentle scaling */
+        @media screen and (min-width: 769px) and (max-width: 900px) {
+            .a4-page {
+                width: 100%;
+                padding: 10mm 10mm;
+            }
+            .field-label, .sub-label { width: 240px; font-size: 10pt; }
+            .header-section h2 { font-size: 12pt; }
+        }
+
+        /* ============================================================
+           PRINT — strict A4, photo top-right, identical to original
+        ============================================================ */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+
+            /* ── Restore full A4 dimensions ── */
+            .a4-page {
+                width: 210mm !important;
+                min-height: 297mm !important;
+                height: auto;
+                padding: 10mm 15mm !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            /* ── Restore absolute positions for logo ── */
+            .logo-area {
+                position: absolute !important;
+                display: block !important;
+                left: 15mm;
+                top: 10mm;
+                width: auto !important;
+                float: none !important;
+                justify-content: unset !important;
+                margin: 0 !important;
+            }
+            .logo-area img { width: 22mm !important; }
+
+            /* ── Restore photo to top-right absolute position ── */
+            .photo-area {
+                position: absolute !important;
+                display: block !important;
+                right: 15mm !important;
+                top: 10mm !important;
+                left: auto !important;
+                width: auto !important;
+                float: none !important;
+                align-items: unset !important;
+                margin: 0 !important;
+            }
+            .photo-box { width: 30mm !important; height: 35mm !important; }
+
+            /* ── Restore header spacing ── */
+            .header-section {
+                padding: 0 35mm !important;
+            }
+            .header-section h2 { font-size: 14pt !important; }
+            .header-section p  { font-size: 10pt !important; }
+            .form-oval  { font-size: 11pt !important; }
+            .form-title { font-size: 11pt !important; margin-bottom: 25px !important; }
+            .main-form  { font-size: 11pt !important; }
+
+            /* ── Restore horizontal field rows ── */
+            .field-row  { flex-direction: row !important; margin-bottom: 8px !important; }
+            .field-label, .sub-label { width: 310px !important; }
+            .sub-label  { padding-left: 25px !important; }
+            .field-dots { display: block !important; }
+            .field-value-box { border-bottom: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ================================================================
+     TOP BAR
+================================================================ -->
+<div class="top-bar no-print">
+    <select id="userDistrict">
+        <option value="">--  (Select District) --</option>
+        <option value="Thiruvananthapuram">Thiruvananthapuram </option>
+        <option value="Kollam">Kollam </option>
+        <option value="Pathanamthitta">Pathanamthitta </option>
+        <option value="Alappuzha">Alappuzha </option>
+        <option value="Kottayam">Kottayam </option>
+        <option value="Idukki">Idukki </option>
+        <option value="Ernakulam">Ernakulam </option>
+        <option value="Thrissur">Thrissur </option>
+        <option value="Palakkad">Palakkad </option>
+        <option value="Malappuram">Malappuram </option>
+        <option value="Kozhikode">Kozhikode </option>
+        <option value="Wayanad">Wayanad </option>
+        <option value="Kannur">Kannur </option>
+        <option value="Kasaragod">Kasaragod </option>
+    </select>
+    <button class="btn-top btn-submit" id="submitBtn" onclick="submitApplication()">
+        <span class="spinner" id="submitSpinner"></span>
+        Submit Online
+    </button>
+    <button class="btn-top btn-print" onclick="window.print()">Print Form</button>
+</div>
+
+<!-- ================================================================
+     A4 FORM PAGE
+     DOM order: logo → header → photo → main-form
+     • Desktop: logo=absolute top-left, photo=absolute top-right (CSS)
+     • Mobile:  all flow as static blocks in natural DOM order
+     • Print:   restores absolute positions via @media print
+================================================================ -->
+<!-- ================================================================
+     A4 FORM PAGE
+================================================================ -->
+<div class="a4-page">
+
+    <!-- Logo -->
+    <div class="logo-area">
+        <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhETy3DFh--DdP5vTPBz70-xwzzwhH_zJhE_0PBBerY402EMi7AdbpKhc10gzCDJqIn0BBSPtDDsGE_sa-iYcR6RvM0nJJrvxqxQ-bam5ZtmuEoChYaluYm58gplQNYES5nIcvCkEL-Tuj7_FBTmb9zo5FjpJvdzpq0ZV4BjW8qY5Wm-ZKANU5NKTT0dw=s224" alt="KGAPA Logo">
+    </div>
+
+    <!-- Header -->
+    <div class="header-section">
+        <h2>KERALA GOVT: AYURVEDA PHARMACISTS' ASSOCIATION</h2>
+        <p>Central Committee, Thiruvananthapuram (Reg. No. 202/78)</p>
+        <div class="form-oval">Form No: 1 Part A</div><br>
+        <div class="form-title">( APPLICATION FOR MEMBERSHIP )</div>
+    </div>
+
+    <!-- Photo area -->
+    <div class="photo-area">
+        <div class="photo-box">
+            <span id="p-txt" style="color:#999; font-size:8pt;">Photo</span>
+            <img id="p-img" alt="Applicant Photo">
+        </div>
+        <button class="upload-btn no-print" onclick="document.getElementById('p-in').click()">Upload</button>
+        <input type="file" id="p-in" hidden accept="image/*" onchange="showImg(this, 'p-img', 'p-txt')">
+    </div>
+
+    <!-- Main form fields -->
+    <div class="main-form">
+        <div class="field-row"><div class="field-label">1. Name</div><div class="field-dots">:</div><div class="field-value-box" id="fieldName" contenteditable="true"></div></div>
+        <div class="field-row"><div class="field-label">2. PEN</div><div class="field-dots">:</div><div class="field-value-box" id="fieldPEN" contenteditable="true"></div></div>
+        <div class="field-row"><div class="field-label">3. Designation</div><div class="field-dots">:</div><div class="field-value-box" id="fieldDesignation" contenteditable="true"></div></div>
+        <div class="field-row"><div class="field-label">4. Official Address</div><div class="field-dots">:</div><div class="field-value-box" id="fieldOfficialAddress" contenteditable="true"></div></div>
+        <div class="field-row"><div class="field-label">5. Date of Appointment</div><div class="field-dots">:</div><div class="field-value-box" id="fieldApptDate" contenteditable="true"></div></div>
+        <div class="field-row"><div class="field-label">6. Date of Retirement</div><div class="field-dots">:</div><div class="field-value-box" id="fieldRetDate" contenteditable="true"></div></div>
+        <div class="field-row"><div class="field-label">7. Pay &amp; Scale of Pay</div><div class="field-dots">:</div><div class="field-value-box" id="fieldPayScale" contenteditable="true"></div></div>
+        <div class="field-row"><div class="field-label">8. Age and Date of Birth</div><div class="field-dots">:</div><div class="field-value-box" id="fieldAgeDob" contenteditable="true"></div></div>
+        <div class="field-row"><div class="field-label">9. Qualification</div></div>
+        <div class="field-row"><div class="sub-label">(a) General</div><div class="field-dots">:</div><div class="field-value-box" id="fieldQualGen" contenteditable="true"></div></div>
+        <div class="field-row"><div class="sub-label">(b) Technical</div><div class="field-dots">:</div><div class="field-value-box" id="fieldQualTech" contenteditable="true"></div></div>
+        <div class="field-row"><div class="field-label">10. Permanent Postal Address</div><div class="field-dots">:</div><div class="field-value-box address-box-2line" id="fieldPermAddress" contenteditable="true"></div></div>
+        <div class="field-row"><div class="field-label">11. Mobile Numbers </div><div class="field-dots">:</div><div class="field-value-box" id="fieldPhone" contenteditable="true"></div></div>
+        <div class="field-row"><div class="field-label">12. E-mail ID</div><div class="field-dots">:</div><div class="field-value-box" id="fieldEmail" contenteditable="true"></div></div>
+    </div>
+
+    <p class="declaration">I do hereby agree to abide by the by-laws of the Association and to act according to the decision of the Association.</p>
+
+    <!-- Footer Signature -->
+    <div class="footer-sig">
+        <div>
+            Place:&nbsp;<span class="field-value-box" id="fieldPlace" style="min-width:120px; display:inline-block;" contenteditable="true"></span>
+            <br><br>
+            Date:&nbsp;<span class="field-value-box" id="fieldAppDate" style="min-width:120px; display:inline-block;" contenteditable="true"></span>
+        </div>
+        <div class="sig-section">
+            <div class="sig-box">
+                <span id="s-txt" style="color:#999; font-size:10pt;">Applicant Signature</span>
+                <img id="s-img" alt="Signature">
+            </div>
+            <button class="upload-btn no-print" onclick="document.getElementById('s-in').click()">Upload Sign</button>
+            <input type="file" id="s-in" hidden accept="image/*" onchange="showImg(this, 's-img', 's-txt')">
+            <br><strong>Signature of Applicant</strong>
+        </div>
+    </div>
+    <div class="remarks-header">Remarks of the Dist. Committee</div>
+    <div class="main-form">
+        <div class="field-row">
+            <div class="field-label">1. Name of District</div>
+            <div class="field-dots">:</div>
+            <div class="field-value-box" contenteditable="true"></div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">2. Dist. Committee Decision No. & Date</div>
+            <div class="field-dots">:</div>
+            <div class="field-value-box" contenteditable="true"></div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">3. Admission No</div>
+            <div class="field-dots">:</div>
+            <div class="field-value-box" contenteditable="true"></div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">4. Remarks</div>
+            <div class="field-dots">:</div>
+            <div class="field-value-box" contenteditable="true"></div>
+        </div>
+        <div class="field-row">
+            <div class="field-label">5. Date</div>
+            <div class="field-dots">:</div>
+            <div class="field-value-box" contenteditable="true"></div>
+        </div>
+    </div>
+
+    <div style="float: right; text-align: center; width: 160px; margin-top: 5px;">
+        <div class="sig-box"><img id="ps-img" alt="President/Secretary Signature"></div>
+        <button class="upload-btn no-print" onclick="document.getElementById('ps-in').click()">Upload Sign</button>
+        <input type="file" id="ps-in" hidden accept="image/*" onchange="showImg(this, 'ps-img')">
+        <br><strong>President / Secretary</strong>
+    </div>
+</div><!-- /.a4-page -->
+
+
+</div>
+
+
+    
+<!-- ================================================================
+     STATUS CHECK + ID CARD
+================================================================ -->
+<div class="status-container no-print">
+    <h3 style="margin-top: 0; color: #333;">Check Approval Status</h3>
+    <input type="text" id="checkPhoneInput" class="status-input" placeholder="Enter Registered Phone Number">
+    <button class="check-btn" id="checkBtn" onclick="checkStatus()">Check Status</button>
+    <div id="statusMessage" style="margin-top: 15px; font-weight: bold; font-size: 14px;"></div>
+
+    <!-- പുതിയ അഡ്മിൻ ഡിസൈനിലുള്ള ID Card Template -->
+    <div id="templateWrapper" style="display: none; justify-content: center; margin-top: 25px; margin-bottom: 25px;">
+       <div id="idCardTemplate" style="width:260px; height:430px; background:#ffffff; border-radius:12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); overflow:hidden; font-family:'Arial',sans-serif; display:flex; flex-direction:column; position:relative; border: 3px solid #2e7d32;">
+            
+            <!-- Top Green Header -->
+            <div style="background:#2e7d32; color:white; text-align:center; padding:15px 10px 12px 10px;">
+                <img crossorigin="anonymous" src="https://raw.githubusercontent.com/sumteck/mfkgapa/main/20210813_123510.png" style="height:45px; width:45px; background:white; border-radius:50%; padding:2px; margin-bottom:8px; object-fit:contain;">
+                <div style="font-size:11px; font-weight:bold; line-height:1.4;">KERALA GOVT. AYURVEDA<br>PHARMACISTS' ASSOCIATION</div>
+                <div style="font-size:8px; margin-top:5px; opacity: 0.9;">Central Committee, Thiruvananthapuram</div>
+                <div style="font-size:8px; margin-top:2px; opacity: 0.9;">Reg. No. 202/78</div>
+            </div>
+
+            <!-- Middle Content -->
+            <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:15px 10px;">
+                <!-- Photo Box -->
+                <div style="width:90px; height:110px; border:2px solid #2e7d32; border-radius:8px; overflow:hidden; margin-bottom:12px; background:#f4f4f4; display:flex; justify-content:center; align-items:center;">
+                    <img id="idCardPhoto" src="" style="width:100%; height:100%; object-fit:cover; display:none;" alt="">
+                    <span id="photoPlaceholder" style="font-size:10px; color:#999;">PHOTO</span>
+                </div>
+                
+                <!-- Name & Designation -->
+                <div id="idCardName" style="font-size:16px; font-weight:bold; color:#000; text-transform:uppercase; text-align:center; width:100%; word-wrap:break-word;"></div>
+                <div id="idCardDesignation" style="font-size:12px; font-weight:bold; color:#000; text-transform:uppercase; text-align:center; width:100%; word-wrap:break-word;"></div>
+
+                <!-- Member No Block -->
+                <div style="background:#c9f09d; border:1px solid #a5d6a7; border-radius:6px; padding:8px 15px; margin-top:15px; text-align:center; width:85%;">
+    <div style="font-size:9px; color:#555; font-weight:bold; margin-bottom:3px; letter-spacing: 0.5px;">MEMBER NO.</div>
+    <div id="idCardNo" style="font-size:14px; font-weight:bold; color:#d32f2f; text-transform: uppercase;"></div>
+</div>
+            </div>
+
+            <!-- Bottom District Bar -->
+            <!-- Bottom District Bar -->
+            <div id="idcDistrict" style="background:#2e7d32; color:white; display:flex; align-items:center; justify-content:center; min-height:45px; font-size:14px; font-weight:bold; text-transform:uppercase; letter-spacing: 1px; flex-shrink: 0;">
+            </div>
+        </div>
+    </div>
+
+    <button id="downloadIdBtn" class="download-btn" onclick="generateIDCard()">Download ID Card (Image)</button>
+    <!-- പുതിയ PDF/Form ബട്ടൺ (ഇത് ചേർക്കുക) -->
+<button id="downloadPdfBtn" class="download-btn" style="background: #8e44ad; display: none; margin-top: 10px;" onclick="viewUserForm()">📄 Download Application Form (PDF)</button>
+</div>
+
+<!-- ================================================================
+     JAVASCRIPT
+================================================================ -->
+<script>
+    /* ----------------------------------------------------------------
+       CONFIGURATION — replace with your real Cloudflare Worker URL
+    ---------------------------------------------------------------- */
+    const API_URL = "https://kgapa-backend.kgapaalpy.workers.dev";
+
+    /* ----------------------------------------------------------------
+       IMAGE UPLOAD + COMPRESSION
+       (kept exactly as original — Canvas-based compression)
+    ---------------------------------------------------------------- */
+    function showImg(input, imgId, txtId) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                // Compress via canvas before storing in memory
+                var img = new Image();
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    var MAX_DIM = 400;
+                    var ratio = Math.min(MAX_DIM / img.width, MAX_DIM / img.height, 1);
+                    canvas.width  = Math.round(img.width  * ratio);
+                    canvas.height = Math.round(img.height * ratio);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    var compressed = canvas.toDataURL('image/jpeg', 0.7);
+
+                    var el = document.getElementById(imgId);
+                    if (el) {
+                        el.src = compressed;
+                        el.style.display = 'block';
+                    }
+                    if (txtId) {
+                        var txt = document.getElementById(txtId);
+                        if (txt) txt.style.display = 'none';
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    /* ----------------------------------------------------------------
+       SUBMIT APPLICATION — Cloudflare Worker POST
+    ---------------------------------------------------------------- */
+     // Submit Application (Updated)
+    async function submitApplication() {
+        const submitBtn = document.getElementById('submitBtn');
+        const spinner   = document.getElementById('submitSpinner');
+
+        try {
+            const district = (document.getElementById('userDistrict')?.value || "").trim();
+            // ടെക്സ്റ്റ് എടുക്കാനുള്ള എളുപ്പവഴി
+            const getText = (id) => (document.getElementById(id)?.innerText || "").trim();
+            
+            const name = getText('fieldName');
+            const phone = getText('fieldPhone');
+            const photoSrc = document.getElementById('p-img')?.getAttribute('src') || "";
+            const signSrc = document.getElementById('s-img')?.getAttribute('src') || "";
+
+            if (!district) return alert("ദയവായി നിങ്ങളുടെ ജില്ല തിരഞ്ഞെടുക്കുക!");
+            if (!name || !phone) return alert("ദയവായി ഫോമിൽ Name ഉം Phone Number ഉം പൂരിപ്പിക്കുക.");
+
+            submitBtn.disabled = true;
+            if(spinner) spinner.style.display = 'inline-block';
+
+            // മുഴുവൻ ഡാറ്റയും ഡാറ്റാബേസിലേക്ക് അയക്കാൻ തയ്യാറാക്കുന്നു 👇
+            let payload = {
+                district: district, 
+                name: name, 
+                phone: phone,
+                pen: getText('fieldPEN'),
+                designation: getText('fieldDesignation') || "Ayurveda Pharmacist",
+                officialAddress: getText('fieldOfficialAddress'),
+                apptDate: getText('fieldApptDate'),
+                retDate: getText('fieldRetDate'),
+                payScale: getText('fieldPayScale'),
+                ageDob: getText('fieldAgeDob'),
+                qualGen: getText('fieldQualGen'),
+                qualTech: getText('fieldQualTech'),
+                permAddress: getText('fieldPermAddress'),
+                email: getText('fieldEmail'),
+                place: getText('fieldPlace'),
+                appDate: getText('fieldAppDate'),
+                photo: photoSrc, 
+                sign: signSrc, 
+                status: "Pending"
+            };
+
+            let apiUrl = `${API_URL}/submit`;
+            
+            // ഇത് റിജക്ട് ആയ ഫോം തിരുത്തുന്നതാണെങ്കിൽ
+            if (typeof rejectedAppId !== 'undefined' && rejectedAppId) {
+                apiUrl = `${API_URL}/update`;
+                payload.id = rejectedAppId;
+            }
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || `Server error: ${response.status}`);
+
+            alert(typeof rejectedAppId !== 'undefined' && rejectedAppId ? "താങ്കളുടെ അപേക്ഷ വിജയകരമായി തിരുത്തി സമർപ്പിച്ചു!" : "അപേക്ഷ അഡ്മിൻ പാനലിലേക്ക് അയച്ചിരിക്കുന്നു!");
+            window.location.reload();
+
+        } catch (err) {
+            console.error(err);
+            alert("Error: " + err.message);
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+            if (spinner) spinner.style.display = 'none';
+        }
+    }
+
+    /* ----------------------------------------------------------------
+       CHECK STATUS — Cloudflare Worker GET
+       ID Card: uses admission_no from API when status is "Approved"
+    ---------------------------------------------------------------- */
+    /* ----------------------------------------------------------------
+       CHECK STATUS & EDIT REJECTED APPLICATION
+    ---------------------------------------------------------------- */
+    let rejectedAppId = null; // റിജക്ട് ആയ അപേക്ഷയുടെ ഐഡി സൂക്ഷിക്കാൻ
+    let rejectedAppDistrict = null; // അപേക്ഷയുടെ ജില്ല സൂക്ഷിക്കാൻ
+
+    async function checkStatus() {
+        const phoneInput  = document.getElementById('checkPhoneInput').value.trim();
+        const statusMsg   = document.getElementById('statusMessage');
+        const downloadBtn = document.getElementById('downloadIdBtn');
+        const cardWrapper = document.getElementById('templateWrapper');
+        const checkBtn    = document.getElementById('checkBtn');
+
+        if (!phoneInput) {
+            statusMsg.innerText   = "ദയവായി ഫോൺ നമ്പർ നൽകുക.";
+            statusMsg.style.color = "red";
+            return;
+        }
+
+        checkBtn.disabled         = true;
+        checkBtn.innerText        = "Checking...";
+        statusMsg.innerHTML       = ""; // changed to innerHTML
+        downloadBtn.style.display = "none";
+        cardWrapper.style.display = "none";
+
+        try {
+            const response = await fetch(`${API_URL}/check?phone=${encodeURIComponent(phoneInput)}`);
+
+            if (response.status === 404) {
+                statusMsg.innerText   = "ഈ നമ്പറിൽ അപേക്ഷയൊന്നും ലഭിച്ചിട്ടില്ല.";
+                statusMsg.style.color = "red";
+                return;
+            }
+
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+            const userRecord = await response.json();
+
+            if (userRecord.status === "Pending") {
+                statusMsg.innerText   = "⏳ Waiting for Approval... താങ്കളുടെ അപേക്ഷ പരിശോധനയിലാണ്.";
+                statusMsg.style.color = "#e67e22";
+
+            } else if (userRecord.status === "Approved") {
+                statusMsg.innerText   = "✅ Approved! താങ്കളുടെ അപേക്ഷ അംഗീകരിച്ചു.";
+                statusMsg.style.color = "#27ae60";
+
+                cardWrapper.style.display  = "flex";
+                downloadBtn.style.display  = "block";
+                document.getElementById('downloadPdfBtn').style.display = "block";
+                window.currentUserRecord = userRecord; // ഡാറ്റ ഗ്ലോബൽ ആയി സേവ് ചെയ്യുന്നു
+
+                // കാർഡിലേക്ക് ഡാറ്റ കൊടുക്കുന്നു
+                document.getElementById('idCardName').innerText        = userRecord.name;
+                document.getElementById('idCardDesignation').innerText = userRecord.designation || "Ayurveda Pharmacist";
+                document.getElementById('idcDistrict').innerText       = userRecord.district || "";
+
+                const admissionNo = userRecord.admission_no || userRecord.admissionNo || userRecord.memberNo || '';
+                document.getElementById('idCardNo').innerText = admissionNo;
+
+                if (userRecord.photo && userRecord.photo.length > 100) {
+                    document.getElementById('idCardPhoto').src           = userRecord.photo;
+                    document.getElementById('idCardPhoto').style.display = "block";
+                    document.getElementById('photoPlaceholder').style.display = "none";
+                }
+
+            } else if (userRecord.status.toUpperCase() === "REJECTED") {
+                // റിജക്ട് ആണെങ്കിൽ എഡിറ്റ് ബട്ടൺ കാണിക്കുന്നു
+                statusMsg.innerHTML = `
+                    <div style="color: red; font-weight: bold; margin-bottom: 10px;">
+                        ❌ അപേക്ഷ നിരസിക്കപ്പെട്ടു. ഫോമിലെ തെറ്റുകൾ തിരുത്തി വീണ്ടും സമർപ്പിക്കുക.
+                    </div>
+                    <button onclick="loadRejectedApp('${encodeURIComponent(JSON.stringify(userRecord))}')" 
+                            style="padding: 10px 15px; background: #f39c12; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                        ✏️ തിരുത്തലുകൾ വരുത്താൻ ഇവിടെ ക്ലിക്ക് ചെയ്യുക
+                    </button>
+                `;
+            } else {
+                statusMsg.innerText   = "Status: " + userRecord.status;
+                statusMsg.style.color = "#555";
+            }
+
+        } catch (err) {
+            console.error(err);
+            statusMsg.innerText   = "Error checking status. Please try again.";
+            statusMsg.style.color = "red";
+        } finally {
+            checkBtn.disabled  = false;
+            checkBtn.innerText = "Check Status";
+        }
+    }
+
+    // ഫോമിലേക്ക് ഡാറ്റ ലോഡ് ചെയ്യാൻ
+    // ഫോമിലേക്ക് ഡാറ്റ ലോഡ് ചെയ്യാൻ
+    function loadRejectedApp(appJsonStr) {
+        const app = JSON.parse(decodeURIComponent(appJsonStr));
+        rejectedAppId = app.id;
+        rejectedAppDistrict = app.district;
+
+        const setText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val || ''; };
+        
+        if(app.district) document.getElementById('userDistrict').value = app.district;
+        setText('fieldName', app.name);
+        setText('fieldPhone', app.phone);
+        setText('fieldPEN', app.pen);
+        setText('fieldDesignation', app.designation);
+        setText('fieldOfficialAddress', app.officialAddress);
+        setText('fieldApptDate', app.apptDate);
+        setText('fieldRetDate', app.retDate);
+        setText('fieldPayScale', app.payScale);
+        setText('fieldAgeDob', app.ageDob);
+        setText('fieldQualGen', app.qualGen);
+        setText('fieldQualTech', app.qualTech);
+        setText('fieldPermAddress', app.permAddress);
+        setText('fieldEmail', app.email);
+        setText('fieldPlace', app.place);
+        setText('fieldAppDate', app.appDate);
+        
+        if (app.photo && app.photo.length > 100) {
+            document.getElementById('p-img').src = app.photo;
+            document.getElementById('p-img').style.display = 'block';
+            document.getElementById('p-txt').style.display = 'none';
+        }
+        if (app.sign && app.sign.length > 100) {
+            document.getElementById('s-img').src = app.sign;
+            document.getElementById('s-img').style.display = 'block';
+            document.getElementById('s-txt').style.display = 'none';
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = '<span class="spinner" id="submitSpinner"></span>Update Application';
+        submitBtn.style.backgroundColor = "#27ae60";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Submit Application
+    async function submitApplication() {
+        const submitBtn = document.getElementById('submitBtn');
+        const spinner   = document.getElementById('submitSpinner');
+
+        try {
+            const district = (document.getElementById('userDistrict')?.value || "").trim();
+            const getText = (id) => (document.getElementById(id)?.innerText || "").trim();
+            
+            const name = getText('fieldName');
+            const phone = getText('fieldPhone');
+            const photoSrc = document.getElementById('p-img')?.getAttribute('src') || "";
+            const signSrc = document.getElementById('s-img')?.getAttribute('src') || "";
+
+            if (!district) return alert("ദയവായി നിങ്ങളുടെ ജില്ല തിരഞ്ഞെടുക്കുക!");
+            if (!name || !phone) return alert("ദയവായി ഫോമിൽ Name ഉം Phone Number ഉം പൂരിപ്പിക്കുക.");
+
+            submitBtn.disabled = true;
+            spinner.style.display = 'inline-block';
+
+            let payload = {
+                district, name, phone,
+                pen: getText('fieldPEN'),
+                designation: getText('fieldDesignation') || "Ayurveda Pharmacist",
+                officialAddress: getText('fieldOfficialAddress'),
+                apptDate: getText('fieldApptDate'),
+                retDate: getText('fieldRetDate'),
+                payScale: getText('fieldPayScale'),
+                ageDob: getText('fieldAgeDob'),
+                qualGen: getText('fieldQualGen'),
+                qualTech: getText('fieldQualTech'),
+                permAddress: getText('fieldPermAddress'),
+                email: getText('fieldEmail'),
+                place: getText('fieldPlace'),
+                appDate: getText('fieldAppDate'),
+                photo: photoSrc, sign: signSrc, status: "Pending"
+            };
+
+            let apiUrl = `${API_URL}/submit`;
+            if (rejectedAppId) {
+                apiUrl = `${API_URL}/update`;
+                payload.id = rejectedAppId;
+            }
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || `Server error: ${response.status}`);
+
+            alert(rejectedAppId ? "താങ്കളുടെ അപേക്ഷ വിജയകരമായി തിരുത്തി സമർപ്പിച്ചു!" : "അപേക്ഷ അഡ്മിൻ പാനലിലേക്ക് അയച്ചിരിക്കുന്നു!");
+            window.location.reload();
+
+        } catch (err) {
+            console.error(err);
+            alert("Error: " + err.message);
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+            if (spinner) spinner.style.display = 'none';
+        }
+    }
+    /* ----------------------------------------------------------------
+       ID CARD GENERATION — html2canvas (unchanged)
+    ---------------------------------------------------------------- */
+    function generateIDCard() {
+        const element = document.getElementById('idCardTemplate');
+        html2canvas(element, {
+            scale: 4,
+            useCORS: true,
+            backgroundColor: null
+        }).then(canvas => {
+            const link    = document.createElement('a');
+            link.download = 'KGAPA_ID_Card.png';
+            link.href     = canvas.toDataURL("image/png");
+            link.click();
+        });
+    }
+</script>
+<!-- ==========================================
+     APPROVED APPLICATION VIEW & PDF EXPORT
+=========================================== -->
+<style>
+    .user-form-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; overflow-y: auto; padding: 20px; font-family: 'Arial', sans-serif; }
+    .user-form-modal-content { background: #525659; margin: auto; padding: 20px; width: fit-content; border-radius: 8px; position: relative; }
+    .user-close-form-btn { position: absolute; top: 10px; right: 10px; font-size: 30px; cursor: pointer; color: white; background: #d32f2f; border-radius: 50%; width: 40px; height: 40px; text-align: center; line-height: 35px; font-weight: bold; border: 2px solid white; }
+    .user-print-btn-modal { background: #8e44ad; color: white; padding: 10px 20px; border: none; cursor: pointer; font-size: 16px; margin-bottom: 20px; border-radius: 5px; font-weight:bold; }
+    
+    .user-a4-page { width: 210mm; min-height: 297mm; padding: 10mm 15mm; margin: auto; background: white; position: relative; color: black; box-sizing: border-box; }
+    .user-a4-page .logo-area { position: absolute; left: 15mm; top: 10mm; }
+    .user-a4-page .logo-area img { width: 22mm; }
+    .user-a4-page .photo-area { position: absolute; right: 15mm; top: 10mm; border: 1px solid #000; width: 30mm; height: 35mm; display:flex; justify-content:center; align-items:center; }
+    .user-a4-page .photo-area img { width: 100%; height: 100%; object-fit: cover; }
+    .user-a4-page .header-section { text-align: center; padding: 0 35mm; margin-bottom: 20px; }
+    .user-a4-page .header-section h2 { font-size: 14pt; margin: 0; }
+    .user-a4-page .form-oval { border: 1.5px solid black; border-radius: 20px; padding: 3px 20px; display: inline-block; margin: 8px 0; font-weight: bold; font-size: 11pt; }
+    .user-a4-page .form-title { font-weight: bold; font-size: 11pt; text-decoration: underline; }
+    .user-a4-page .field-row { display: flex; margin-bottom: 8px; font-size: 11pt; }
+    .user-a4-page .field-label { width: 310px; font-weight: bold; }
+    .user-a4-page .field-dots { width: 20px; text-align: center; font-weight: bold; }
+    .user-a4-page .field-value { flex-grow: 1; border-bottom: none; min-height: 20px; outline: none; font-weight: bold; }
+    .user-a4-page .remarks-header { text-align: center; font-weight: bold; text-decoration: underline; font-size: 12pt; margin: 20px 0 10px 0; }
+
+    /* PDF Print Settings */
+    @media print {
+        body.viewing-approved * { visibility: hidden; }
+        body.viewing-approved #userFormModal, body.viewing-approved #userFormModal * { visibility: visible; }
+        body.viewing-approved #userFormModal { position: absolute; left: 0; top: 0; width: 100%; padding: 0; background: transparent;}
+        body.viewing-approved .user-form-modal-content { background: transparent; margin: 0; padding: 0; box-shadow: none; }
+        body.viewing-approved .user-close-form-btn, body.viewing-approved .user-print-btn-modal { display: none !important; }
+        body.viewing-approved .user-a4-page { box-shadow: none; margin: 0; border: none; width: 210mm !important; }
+    }
+</style>
+<style>
+    /* PDF Print Settings (For User Application PDF) */
+    @media print {
+        body.viewing-approved * { visibility: hidden; }
+        body.viewing-approved #userFormModal, body.viewing-approved #userFormModal * { visibility: visible; }
+        
+        /* സ്ക്രോൾ ബാർ ഒഴിവാക്കാനുള്ള കോഡ് */
+        body.viewing-approved #userFormModal { position: absolute; left: 0; top: 0; width: 100%; height: auto !important; padding: 0; background: transparent; overflow: visible !important; }
+        ::-webkit-scrollbar { display: none !important; }
+        
+        body.viewing-approved .user-form-modal-content { background: transparent; margin: 0; padding: 0; box-shadow: none; }
+        body.viewing-approved .user-close-form-btn, body.viewing-approved .user-print-btn-modal { display: none !important; }
+        body.viewing-approved .user-a4-page { box-shadow: none; margin: 0; border: none; width: 210mm !important; }
+    }
+</style>
+
+<div id="userFormModal" class="user-form-modal">
+    <div class="user-form-modal-content">
+        <span class="user-close-form-btn" onclick="closeUserForm()">&times;</span>
+        <button class="user-print-btn-modal" onclick="window.print()">💾 Save as PDF / Print</button>
+        
+        <div class="user-a4-page">
+            <div class="logo-area"><img src="https://blogger.googleusercontent.com/img/a/AVvXsEhETy3DFh--DdP5vTPBz70-xwzzwhH_zJhE_0PBBerY402EMi7AdbpKhc10gzCDJqIn0BBSPtDDsGE_sa-iYcR6RvM0nJJrvxqxQ-bam5ZtmuEoChYaluYm58gplQNYES5nIcvCkEL-Tuj7_FBTmb9zo5FjpJvdzpq0ZV4BjW8qY5Wm-ZKANU5NKTT0dw=s224" alt="Logo"></div>
+            
+            <div class="header-section">
+                <h2>KERALA GOVT: AYURVEDA PHARMACISTS' ASSOCIATION</h2>
+                <p style="margin:2px 0; font-weight:bold; font-size:10pt;">Central Committee, Thiruvananthapuram (Reg. No. 202/78)</p>
+                <div class="form-oval">Form No: 1 Part A</div><br>
+                <div class="form-title">( APPLICATION FOR MEMBERSHIP )</div>
+            </div>
+
+            <div class="photo-area" style="width: 30mm !important; height: 35mm !important; overflow: hidden !important; position: absolute !important; right: 15mm !important; top: 10mm !important; border: 1px solid #000; background: #fff;">
+                <img id="userViewPhoto" src="" alt="Photo" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display:none;">
+            </div>
+
+           <!-- Main Form -->
+            <div class="main-form">
+                <div class="field-row"><div class="field-label">1. Name</div><div class="field-dots">:</div><div class="field-value" id="userViewName"></div></div>
+                <div class="field-row"><div class="field-label">2. PEN</div><div class="field-dots">:</div><div class="field-value" id="userViewPen"></div></div>
+                <div class="field-row"><div class="field-label">3. Designation</div><div class="field-dots">:</div><div class="field-value" id="userViewDesig"></div></div>
+                <div class="field-row"><div class="field-label">4. Official Address</div><div class="field-dots">:</div><div class="field-value" id="userViewOfficialAddress"></div></div>
+                <div class="field-row"><div class="field-label">5. Date of Appointment</div><div class="field-dots">:</div><div class="field-value" id="userViewApptDate"></div></div>
+                <div class="field-row"><div class="field-label">6. Date of Retirement</div><div class="field-dots">:</div><div class="field-value" id="userViewRetDate"></div></div>
+                <div class="field-row"><div class="field-label">7. Pay & Scale of Pay</div><div class="field-dots">:</div><div class="field-value" id="userViewPayScale"></div></div>
+                <div class="field-row"><div class="field-label">8. Age and Date of Birth</div><div class="field-dots">:</div><div class="field-value" id="userViewAgeDob"></div></div>
+                
+                <!-- 9. Qualification -->
+                <div class="field-row"><div class="field-label">9. Qualification</div></div>
+                <div class="field-row"><div class="field-label" style="padding-left: 25px; font-weight: normal;">(a) General</div><div class="field-dots">:</div><div class="field-value" id="userViewQualGen"></div></div>
+                <div class="field-row"><div class="field-label" style="padding-left: 25px; font-weight: normal;">(b) Technical</div><div class="field-dots">:</div><div class="field-value" id="userViewQualTech"></div></div>
+                
+                <div class="field-row"><div class="field-label">10. Permanent Postal Address</div><div class="field-dots">:</div><div class="field-value" id="userViewPermAddress" style="min-height: 40px;"></div></div>
+                <div class="field-row"><div class="field-label">11. Mobile Numbers</div><div class="field-dots">:</div><div class="field-value" id="userViewPhone"></div></div>
+                <div class="field-row"><div class="field-label">12. E-mail ID</div><div class="field-dots">:</div><div class="field-value" id="userViewEmail"></div></div>
+            </div>
+
+            <!-- Signature of Applicant -->
+            <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 11pt;">
+                <div>Place: <span id="userViewPlace" style="border-bottom: #000; min-width:100px; display:inline-block;"></span><br><br>Date: <span id="userViewAppDate" style="border-bottom:#000; min-width:100px; display:inline-block;"></span></div>
+                <div style="text-align: center;">
+                    <img id="userViewSign" src="" style="height: 40px; display: none;"><br>
+                    <strong>Signature of Applicant</strong>
+                </div>
+            </div>
+
+            <div class="remarks-header">Remarks of the Dist. Committee</div>
+            <div class="main-form">
+                <div class="field-row"><div class="field-label">1. Name of District</div><div class="field-dots">:</div><div class="field-value" id="userViewDistrict"></div></div>
+                <div class="field-row"><div class="field-label">2. Dist. Committee Decision No. & Date</div><div class="field-dots">:</div><div class="field-value" id="userDistDecision"></div></div>
+                <div class="field-row"><div class="field-label">3. Admission No</div><div class="field-dots">:</div><div class="field-value" id="userViewAdmNo" style="font-weight:bold; color:#d32f2f;"></div></div>
+                <div class="field-row"><div class="field-label">4. Remarks</div><div class="field-dots">:</div><div class="field-value" id="userDistRemarks"></div></div>
+                <div class="field-row"><div class="field-label">5. Date</div><div class="field-dots">:</div><div class="field-value" id="userDistDate"></div></div>
+            </div>
+
+            <div style="float: right; text-align: center; margin-top: 15px; font-size: 11pt;">
+                <!-- അഡ്മിൻ സേവ് ചെയ്ത ഒപ്പ് ഇവിടെ വരും -->
+                <img id="userPresSignImg" src="" style="height: 40px; display: none; margin: 0 auto; margin-bottom: 5px;">
+                <br>
+                <strong>President / Secretary</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewUserForm() {
+    const app = window.currentUserRecord;
+    if(!app) {
+        alert("ഡാറ്റ ലഭ്യമായില്ല!");
+        return;
+    }
+
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if(el) el.innerText = text || '';
+    };
+
+    // എല്ലാ വിവരങ്ങളും സെറ്റ് ചെയ്യുന്നു
+    setText('userViewName', app.name);
+    setText('userViewPen', app.pen);
+    setText('userViewDesig', app.designation);
+    setText('userViewOfficialAddress', app.officialAddress);
+    setText('userViewApptDate', app.apptDate);
+    setText('userViewRetDate', app.retDate);
+    setText('userViewPayScale', app.payScale);
+    setText('userViewAgeDob', app.ageDob);
+    setText('userViewQualGen', app.qualGen);
+    setText('userViewQualTech', app.qualTech);
+    setText('userViewPermAddress', app.permAddress);
+    setText('userViewPhone', app.phone);
+    setText('userViewEmail', app.email);
+    setText('userViewPlace', app.place);
+    setText('userViewAppDate', app.appDate);
+
+    // അഡ്മിൻ ഡാറ്റകൾ
+    const admNo = app.admission_no || app.admissionNo || app.memberNo || '';
+    setText('userViewAdmNo', admNo);
+    setText('userViewDistrict', app.district);
+    setText('userDistDecision', app.distDecisionNo);
+    setText('userDistRemarks', app.distRemarks || 'Approved');
+    setText('userDistDate', app.distDate);
+
+    // ചിത്രങ്ങളും ഒപ്പുകളും
+    const setImg = (id, src) => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.src = src && src.length > 100 ? src : "";
+            el.style.display = src && src.length > 100 ? 'block' : 'none';
+            if(id === 'userViewSign') el.style.display = src && src.length > 100 ? 'inline-block' : 'none';
+        }
+    };
+
+    setImg('userViewPhoto', app.photo);
+    setImg('userViewSign', app.sign);
+    setImg('userPresSignImg', app.presSign);
+
+    document.body.classList.add('viewing-approved');
+    document.getElementById('userFormModal').style.display = 'block';
+}
+function closeUserForm() {
+    document.body.classList.remove('viewing-approved');
+    document.getElementById('userFormModal').style.display = 'none';
+}
+</script>
+<!-- ========================================== -->
+</body>
+</html>
