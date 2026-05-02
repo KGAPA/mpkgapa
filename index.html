@@ -1199,6 +1199,15 @@ function closeUserForm() {
     document.getElementById('userFormModal').style.display = 'none';
 }
 </script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => console.log('Service Worker രജിസ്റ്റർ ചെയ്തു!', reg))
+        .catch((err) => console.log('Service Worker പരാജയപ്പെട്ടു:', err));
+    });
+  }
+</script>
 <!-- ========================================== -->
 </body>
 </html>
